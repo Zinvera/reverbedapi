@@ -9,7 +9,7 @@ assert(getscriptbytecode, "exploit does not support getscriptbytecode.")
   getgenv().decompile = function(scr)
       local key = getgenv().REVERBED_KEY
       if type(key) ~= "string" or key == "" then
-          return "-- no API key: set getgenv().REVERBED_KEY first at https://discord.gg/XDxU7a4nJU
+          return "-- no API key: set getgenv().REVERBED_KEY first at https://discord.gg/XDxU7a4nJU"
       end
 
       local ok, bytecode = pcall(getscriptbytecode, scr)
