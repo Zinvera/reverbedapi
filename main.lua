@@ -92,7 +92,6 @@ getgenv().decompile = function(scr)
     end
 
     local base = getgenv().REVERBED_URL or "http://94.249.189.101"
-    -- (the script's full name, like Workspace.Map.Door.Script, logged with the request for 24 hours)
     local named, name = pcall(function()
         return scr:GetFullName()
     end)
