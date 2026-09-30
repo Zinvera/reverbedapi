@@ -5655,8 +5655,27 @@ local function synsaveinstance(...)
 
 			local NilInstancesFixes = OPTIONS.NilInstancesFixes
 
+			-- Reverbed: Roblox's settings objects (UserSettings() and its UserGameSettings, settings() and the like) are
+			-- services Studio refuses anywhere in a place file ("UserGameSettings cannot be parented to Game"); the
+			-- service check below misses them when the class list lacks them (ReflectionService's does)
+			local NeverSaved = {
+				UserGameSettings = true,
+				UserSettings = true,
+				GlobalSettings = true,
+				GameSettings = true,
+				DebugSettings = true,
+				LuaSettings = true,
+				NetworkSettings = true,
+				PhysicsSettings = true,
+				RenderSettings = true,
+				Studio = true,
+				TaskScheduler = true,
+			}
+
 			for _, instance in global_container.getnilinstances() do
 				if instance == game then
+					instance = nil
+				elseif NeverSaved[instance.ClassName] or instance:IsA("GenericSettings") then
 					instance = nil
 				else
 					local ClassName = instance.ClassName
@@ -6407,15 +6426,14 @@ local function synsaveinstance(...)
 						fatal = true,
 						test = function()
 							-- Xeno uses UGC and returns 0
-							local o, r = pcall(gethiddenproperty, game, "ForceR15")
-							return o and type(r) == "boolean"
+							return type(gethiddenproperty(game, "ForceR15")) == "boolean"
 						end,
 					},
 					{
 						key = "Enum",
 						test = function()
-							local ok, r = pcall(gethiddenproperty, workspace, "StreamOutBehavior")
-							return ok and (r == nil or typeof(r) == "EnumItem")
+							local r = gethiddenproperty(workspace, "StreamOutBehavior")
+							return r == nil or typeof(r) == "EnumItem"
 						end,
 					},
 					{
@@ -6438,16 +6456,20 @@ local function synsaveinstance(...)
 						retest = true,
 						test = function()
 							ard:SetAttribute("test", "test")
-							local ok, r = pcall(gethiddenproperty, ard, "AttributesSerialize")
-							return ok and r == "\1\0\0\0\4\0\0\0test\2\4\0\0\0test"
+							return gethiddenproperty(ard, "AttributesSerialize") == "\1\0\0\0\4\0\0\0test\2\4\0\0\0test"
 						end,
 					},
 					{
 						key = "SharedString",
 						test = function()
 							ard:AddTag("\1test\2\4test")
-							local ok, r = pcall(gethiddenproperty, ard, "Tags")
-							return ok and r == "\1test\2\4test"
+							return gethiddenproperty(ard, "Tags") == "\1test\2\4test"
+						end,
+					},
+					{
+						key = "NetAssetRef",
+						test = function()
+							return type(gethiddenproperty(Instance.new("MeshPart"), "SolidMeshHolder")) == "string"
 						end,
 					},
 					{
